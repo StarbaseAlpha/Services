@@ -1,6 +1,6 @@
 {
   "name": "@starbase/services",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Starbase Services",
   "main": "index.js",
   "scripts": {
@@ -25,5 +25,13 @@
     "@starbase/profiles": "latest",
     "@starbase/starfire": "latest",
     "express": "^4.16.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/starbasealpha/services.git"
+  },
+  "bugs": {
+    "url": "https://github.com/starbasealpha/services/issues"
+  },
+  "homepage": "https://github.com/starbasealpha/services#readme"
 }

@@ -1,0 +1,29 @@
+{
+  "name": "@starbase/services",
+  "version": "0.0.1",
+  "description": "Starbase Services",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Starbase",
+    "Services",
+    "Auth",
+    "Admin",
+    "Profiles",
+    "Database"
+  ],
+  "author": "Mike Fuller",
+  "license": "MIT",
+  "dependencies": {
+    "@starbase/admin": "latest",
+    "@starbase/auth": "latest",
+    "@starbase/channels": "latest",
+    "@starbase/client": "latest",
+    "@starbase/database": "latest",
+    "@starbase/profiles": "latest",
+    "@starbase/starfire": "latest",
+    "express": "^4.16.4"
+  }
+}

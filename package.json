@@ -25,6 +25,7 @@
     "@starbase/profiles": "latest",
     "@starbase/starfire": "latest",
     "@starbase/functions": "latest",
+    "@starbase/therules": "latest",
     "express": "^4.16.4"
   },
   "repository": {

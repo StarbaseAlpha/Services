@@ -6,6 +6,8 @@ const Channels = require('@starbase/channels');
 const Auth = require('@starbase/auth');
 const Profiles = require('@starbase/profiles');
 const Admin = require('@starbase/admin');
+const theRules = require('@starbase/therules');
+const Functions = require('@starbase/functions');
 const express = require('express');
 
 const path = require('path');
@@ -112,6 +114,25 @@ function Services(settings={}) {
     let service = await getService(req.params.appName);
     if (service) {
       service.admin.express()(req, res);
+    } else {
+      res.status(404).json({"code":404, "message":"Service Not Found"});
+    }
+  });
+
+  router.use('/services/functions/:appName/:func', async (req, res) => {
+    let service = await getService(req.params.appName);
+    if (service) {
+      const functions = Functions();
+      let code = await service.db.path('functions').path(req.params.func).get().then(result => {
+        return result.data.code || null;
+      }).catch(err => {
+        return null;
+      });
+      if (!code) {
+        return res.status(404).json({"code":404, "message":"Function Not Found."});
+      }
+      let env = {"db":service.db, "auth":service.auth, "theRules":theRules};
+      functions.express(code, env, {})(req, res);
     } else {
       res.status(404).json({"code":404, "message":"Service Not Found"});
     }

@@ -31,9 +31,9 @@ function ServicesClient(servicesURL, projectName, token=null) {
     return null;
     };
 
-    let db = Client(servicesURL + '/services/database/' + projectName);
+    let db = Client(servicesURL + '/apps/' + projectName + '/database');
     db.setTokenHandler(getToken);
-    let auth = Client(servicesURL + '/services/auth/' + projectName);
+    let auth = Client(servicesURL + '/apps/' + projectName + '/auth');
 
     let verifyUser = async (token=null) => {
       return await auth.request({

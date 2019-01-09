@@ -83,7 +83,7 @@ function Services(settings={}) {
       service.profiles = Profiles(db, auth);
       service.admin = Admin(db, auth);
       service.functions = await FunctionsExpress({
-        "db":db, "auth": service.auth, "theRules": theRules, "starbase": starbase
+        "db":db, "auth": auth, "theRules": theRules, "starbase": starbase
       });
       return service;
     }).catch(err => {
@@ -91,23 +91,25 @@ function Services(settings={}) {
     });
   };
 
-  const FunctionsExpress = async (env) => {
-    let express = () => {
+  const FunctionsExpress = (env) => {
+    let serv = {};
+    let {db, auth, theRules, starbase} = env;
+    serv.express = () => {
       return async (req, res) => {
-        let func = await env.db.path('functions').path(req.params.name).get().then(result => {
+        let func = await db.path('functions').path(req.params.name).get().then(result => {
           return result.data||{};
         }).catch(err => {
-          return null;
+          return {};
         });
         let {code, options} = func;
         if (!code) {
           return res.status(404).json({"code":404, "message":"Function Not Found."});
         }
-        let env = {"db":system.db, "auth":system.auth, "theRules":theRules};
-        functions.express(code, env, options||{})(req, res);
+        let env = {"db":db, "auth":auth, "theRules":theRules};
+        Functions().express(code, env, options||{})(req, res);
       };
     }
-    return {express};
+    return serv;
   };
 
   const router = express.Router();
@@ -115,11 +117,11 @@ function Services(settings={}) {
   router.use('/system/auth', system.auth.express());
   router.use('/system/profiles', system.profiles.express());
   router.use('/system/admin', system.admin.express());
-  router.use('/system/functions', async (req, res) => {
-    let functions = await FunctionsExpress({
+  router.use('/system/functions/:name', async (req, res) => {
+    let funcs = FunctionsExpress({
       "db": system.db, "auth": system.auth, "theRules": theRules, "starbase": starbase
     });
-    functions.express()(req, res);
+    funcs.express()(req, res);
   });
 
   router.use('/apps/:appName/database', async (req, res) => {

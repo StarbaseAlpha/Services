@@ -2,7 +2,7 @@
 
 const Client = require('@starbase/client');
 
-function ServicesClient(servicesURL, projectName, token=null) {
+function ServicesClient(servicesURL, appName, token=null) {
 
   let setToken = (newToken=null) => {
     token = newToken || null;
@@ -31,9 +31,9 @@ function ServicesClient(servicesURL, projectName, token=null) {
     return null;
     };
 
-    let db = Client(servicesURL + '/apps/' + projectName + '/database');
+    let db = Client(servicesURL + '/apps/' + appName + '/database');
     db.setTokenHandler(getToken);
-    let auth = Client(servicesURL + '/apps/' + projectName + '/auth');
+    let auth = Client(servicesURL + '/apps/' + appName + '/auth');
 
     let verifyUser = async (token=null) => {
       return await auth.request({

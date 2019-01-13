@@ -1,6 +1,6 @@
 {
   "name": "@starbase/services",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Starbase Services",
   "main": "index.js",
   "scripts": {

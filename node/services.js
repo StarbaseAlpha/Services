@@ -39,7 +39,9 @@ function Services(settings={}) {
     "Admin":Admin,
     "theRules":theRules
   };
+
   const functions = Functions();
+  const router = express.Router();
 
   dbPath = dbPath.toString();
   secret = secret.toString();
@@ -67,26 +69,6 @@ function Services(settings={}) {
   system.admin = Admin(system.db, system.auth);
   system.functions = Functions();
 
-  const getService = async (appName=null) => {
-    return await system.db.path('/auth/users').path((appName||"").toString()).get().then(async result => {
-      let database = getDB(dbPath + '/apps-' + appName);
-      let service = {};
-      let db = Channels(database);
-      let auth = Auth(db, appName + secret);
-      service.auth = auth;
-      service.db = db;
-      service.database = Admin(db, system.auth, {"adminUser": appName}); 
-      service.profiles = Profiles(db, auth);
-      service.admin = Admin(db, auth);
-      service.functions = await FunctionsExpress({
-        "db":db, "auth": auth, "theRules": theRules, "starbase": starbase
-      });
-      return service;
-    }).catch(err => {
-      return null;
-    });
-  };
-
   const FunctionsExpress = (env) => {
     let serv = {};
     let {db, auth, theRules, starbase} = env;
@@ -108,7 +90,26 @@ function Services(settings={}) {
     return serv;
   };
 
-  const router = express.Router();
+  if (!settings.platform) {
+
+    router.use('/auth', system.auth.express());
+    router.use('/profiles', system.profiles.express());
+    router.use('/admin', system.admin.express());
+    router.use('/functions/:name', async (req, res) => {
+      let funcs = FunctionsExpress({
+        "db": system.db, "auth": system.auth, "theRules": theRules, "starbase": starbase
+      });
+      funcs.express()(req, res);
+    });
+
+    return {
+      "system": system,
+      "express": () => {
+        return router;
+      }
+    };
+
+  }
 
   router.use('/system/auth', system.auth.express());
   router.use('/system/profiles', system.profiles.express());
@@ -119,6 +120,26 @@ function Services(settings={}) {
     });
     funcs.express()(req, res);
   });
+
+  const getService = async (appName=null) => {
+    return await system.db.path('/auth/users').path((appName||"").toString()).get().then(async result => {
+      let database = getDB(dbPath + '/apps-' + appName);
+      let service = {};
+      let db = Channels(database);
+      let auth = Auth(db, appName + secret);
+      service.auth = auth;
+      service.db = db;
+      service.database = Admin(db, system.auth, {"adminUser": appName});
+      service.profiles = Profiles(db, auth);
+      service.admin = Admin(db, auth);
+      service.functions = await FunctionsExpress({
+        "db":db, "auth": auth, "theRules": theRules, "starbase": starbase
+      });
+      return service;
+    }).catch(err => {
+      return null;
+    });
+  };
 
   router.use('/apps/:appName/database', async (req, res) => {
     let service = await getService(req.params.appName);

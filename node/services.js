@@ -15,7 +15,7 @@ const client = require(__dirname + path.sep + 'client');
 
 function Services(settings={}) {
 
-  let {firestore, systemPath, systemSecret, servicesPath, servicesSecret} = settings;
+  let {firestore, secret, dbPath} = settings;
 
   if (!settings || typeof settings !== 'object') {
     throw('Error: The settings object is required.');
@@ -25,16 +25,12 @@ function Services(settings={}) {
     return client;
   }
 
-  if (!settings.systemSecret) {
-    throw('Error: The settings.systemSecret parameter is required.');
+  if (!settings.secret) {
+    throw('Error: The settings.secret parameter is required.');
   }
 
-  if (!settings.systemPath) {
-    throw('Error: The settings.systemPath parameter is required.');
-  }
-
-  if (!settings.servicesPath) {
-    throw('Error: The settings.servicesPath parameter is required.');
+  if (!settings.dbPath) {
+    throw('Error: The settings.dbPath parameter is required.');
   }
 
   const starbase = {
@@ -45,10 +41,10 @@ function Services(settings={}) {
   };
   const functions = Functions();
 
-  systemPath = systemPath.toString();
-  systemSecret = systemSecret.toString();
-  servicesPath = servicesPath.toString();
-  servicesSecret = (servicesSecret || systemSecret + "SERVICES").toString();
+  dbPath = dbPath.toString();
+  secret = secret.toString();
+  dbPath = dbPath.toString();
+  secret = (secret || secret + "SERVICES").toString();
 
   let getDB;
   if (firestore) {
@@ -64,19 +60,19 @@ function Services(settings={}) {
 
   let system = {};
   system.starbase = starbase;
-  system.database = getDB(systemPath,true);
+  system.database = getDB(dbPath + '/system',true);
   system.db = Channels(system.database);
-  system.auth = Auth(system.db, systemSecret,{"refreshTokenExpires":1000 * 60 * 60 * 24 * 365 * 5});
+  system.auth = Auth(system.db, secret,{"refreshTokenExpires":1000 * 60 * 60 * 24 * 365 * 5});
   system.profiles = Profiles(system.db, system.auth);
   system.admin = Admin(system.db, system.auth);
   system.functions = Functions();
 
   const getService = async (appName=null) => {
-    return await system.db.path('profiles').path((appName||"").toString()).get().then(async result => {
-      let database = getDB(servicesPath + '/' + appName);
+    return await system.db.path('/auth/users').path((appName||"").toString()).get().then(async result => {
+      let database = getDB(dbPath + '/apps-' + appName);
       let service = {};
       let db = Channels(database);
-      let auth = Auth(db, appName + servicesSecret);
+      let auth = Auth(db, appName + secret);
       service.auth = auth;
       service.db = db;
       service.database = Admin(db, system.auth, {"adminUser": appName}); 

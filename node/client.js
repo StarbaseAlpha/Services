@@ -10,7 +10,7 @@ function ServicesClient(servicesURL, appName, token=null) {
 
   let getToken = async () => {
     let refreshToken = async (token) => {
-      return await Client(servicesURL + '/system/auth').request({
+      return await Client(servicesURL + '/auth').request({
         "path":"/",
         "method":"refreshToken",
         "data":{"refreshToken":token.refreshToken}
@@ -19,21 +19,22 @@ function ServicesClient(servicesURL, appName, token=null) {
     if (token && token.accessExpires && token.accessExpires > Date.now()) {
       return token.accessToken;
     }
-    if (token && token.refreshExpires && token.refreshToken && token.refreshExpires > Date.now()) {
+    if (token && token.refreshToken) {
       return refreshToken(token).then(result=>{
         token = result;
         return token.accessToken;
       }).catch(err=>{return null;});
     }
-    if (token && token.refreshExpires && token.refreshExpires < Date.now()) {
-      return null;
-    }
     return null;
     };
 
-    let db = Client(servicesURL + '/apps/' + appName + '/database');
+    let apiURL = servicesURL;
+    if (appName && typeof appName === 'string') {
+      apiURL = apiURL + '/apps/' + appName;
+    }
+    let db = Client(apiURL + '/database');
     db.setTokenHandler(getToken);
-    let auth = Client(servicesURL + '/apps/' + appName + '/auth');
+    let auth = Client(apiURL + '/auth');
 
     let verifyUser = async (token=null) => {
       return await auth.request({

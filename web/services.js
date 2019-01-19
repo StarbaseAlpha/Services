@@ -3,15 +3,12 @@
 function Services(settings={}) {
 
   // Settings
-  const {servicesURL, dbName, system, appName, starbase} = settings;
+  const {servicesURL, dbName, appName, starbase} = settings;
 
-  // Simple, Platform System, or Platform App?
+  // System App or App Platform App?
   let servicesType = servicesURL;
-  if (system) {
-    servicesType = servicesURL + '/system';
-  }
-  if (appName) {
-    servicesType = servicesURL + '/apps/' + appName.toString();
+  if (appName && typeof appName === 'string') {
+    servicesType = servicesURL + '/apps/' + appName;
   }
 
   // Starbase Libraries
